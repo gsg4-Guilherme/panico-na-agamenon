@@ -30,9 +30,9 @@ typedef enum TipoPowerUp {
     POWERUP_NENHUM = 0,
     POWERUP_ESCUDO,
     POWERUP_FREIO,
-    POWERUP_LIMPA_FAIXA,
+    POWERUP_BUZINA,
     POWERUP_DOBRO_PONTOS,
-    POWERUP_MANUTENCAO
+    POWERUP_LIMPA_FAIXA
 } TipoPowerUp;
 
 // Representa o carro do jogador dentro da pista.
@@ -97,9 +97,9 @@ typedef struct EstadoJogo {
     float intervaloPowerUp;
     float tempoFreio;
     float tempoDobroPontos;
-    float tempoManutencao;
+    float tempoInterdicaoFaixa;
     float pontosBonusPowerUp;
-    int faixaManutencao;
+    int faixaInterditada;
     TipoPowerUp powerUpGuardado;
     PowerUpColetavel powerUpColetavel;
     bool jogoAtivo;

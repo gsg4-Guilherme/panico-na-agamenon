@@ -6,14 +6,20 @@
 // Prepara todos os campos de power-up para uma nova partida.
 void InicializarPowerUps(EstadoJogo *jogo);
 
+// Carrega os sprites usados pelos power-ups.
+void CarregarTexturasPowerUps(void);
+
+// Libera os sprites usados pelos power-ups.
+void LiberarTexturasPowerUps(void);
+
 // Atualiza coleta, ativacao e duracao dos efeitos.
 void AtualizarPowerUps(EstadoJogo *jogo, float delta);
 
 // Desenha o item coletavel que esta na pista.
 void DesenharPowerUpColetavel(const EstadoJogo *jogo);
 
-// Desenha a zona segura criada pela manutencao da pista.
-void DesenharZonaManutencao(const EstadoJogo *jogo);
+// Desenha a zona da faixa interditada pelo power-up limpa_faixa.
+void DesenharZonaInterditada(const EstadoJogo *jogo);
 
 // Desenha o escudo visual ao redor do jogador quando ele esta ativo.
 void DesenharEscudoJogador(const EstadoJogo *jogo);

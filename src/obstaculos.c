@@ -3,37 +3,24 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "jogador.h"
 #include "raylib.h"
 
-#define QUANTIDADE_SPRITES_CARRO 3
-#define QUANTIDADE_SPRITES_ONIBUS 2
-
-static const char *CAMINHOS_SPRITES_CARRO[QUANTIDADE_SPRITES_CARRO] = {
-    "assets/veiculos/carro_obstaculo_1.png",
-    "assets/veiculos/carro_obstaculo_2.png",
-    "assets/veiculos/carro_obstaculo_3.png"
-};
-
-static const char *CAMINHOS_SPRITES_ONIBUS[QUANTIDADE_SPRITES_ONIBUS] = {
-    "assets/veiculos/onibus_1.png",
-    "assets/veiculos/onibus_2.png"
-};
-
-static const Vector2 TAMANHOS_SPRITES_CARRO[QUANTIDADE_SPRITES_CARRO] = {
+static const Vector2 TAMANHOS_SPRITES_CARRO[ASSETS_QUANTIDADE_CARROS] = {
     { 56.0f, 84.0f },
     { 56.0f, 84.0f },
     { 56.0f, 84.0f }
 };
 
-static const Vector2 TAMANHOS_SPRITES_ONIBUS[QUANTIDADE_SPRITES_ONIBUS] = {
+static const Vector2 TAMANHOS_SPRITES_ONIBUS[ASSETS_QUANTIDADE_ONIBUS] = {
     { 72.0f, 136.0f },
     { 72.0f, 136.0f }
 };
 
-static Texture2D texturasCarro[QUANTIDADE_SPRITES_CARRO] = { 0 };
-static Texture2D texturasOnibus[QUANTIDADE_SPRITES_ONIBUS] = { 0 };
+static Texture2D texturasCarro[ASSETS_QUANTIDADE_CARROS] = { 0 };
+static Texture2D texturasOnibus[ASSETS_QUANTIDADE_ONIBUS] = { 0 };
 
 static bool TipoObstaculoValido(TipoObstaculo tipo)
 {
@@ -43,10 +30,10 @@ static bool TipoObstaculoValido(TipoObstaculo tipo)
 static int ObterQuantidadeSprites(TipoObstaculo tipo)
 {
     if (tipo == OBSTACULO_ONIBUS) {
-        return QUANTIDADE_SPRITES_ONIBUS;
+        return ASSETS_QUANTIDADE_ONIBUS;
     }
 
-    return QUANTIDADE_SPRITES_CARRO;
+    return ASSETS_QUANTIDADE_CARROS;
 }
 
 static int SortearIndiceSprite(TipoObstaculo tipo)
@@ -56,11 +43,11 @@ static int SortearIndiceSprite(TipoObstaculo tipo)
 
 static Vector2 ObterTamanhoSprite(TipoObstaculo tipo, int indiceSprite)
 {
-    if (tipo == OBSTACULO_ONIBUS && indiceSprite >= 0 && indiceSprite < QUANTIDADE_SPRITES_ONIBUS) {
+    if (tipo == OBSTACULO_ONIBUS && indiceSprite >= 0 && indiceSprite < ASSETS_QUANTIDADE_ONIBUS) {
         return TAMANHOS_SPRITES_ONIBUS[indiceSprite];
     }
 
-    if (indiceSprite >= 0 && indiceSprite < QUANTIDADE_SPRITES_CARRO) {
+    if (indiceSprite >= 0 && indiceSprite < ASSETS_QUANTIDADE_CARROS) {
         return TAMANHOS_SPRITES_CARRO[indiceSprite];
     }
 
@@ -75,11 +62,11 @@ static Texture2D ObterTexturaObstaculo(const Obstaculo *obstaculo)
 
     if (obstaculo->tipo == OBSTACULO_ONIBUS &&
         obstaculo->indiceSprite >= 0 &&
-        obstaculo->indiceSprite < QUANTIDADE_SPRITES_ONIBUS) {
+        obstaculo->indiceSprite < ASSETS_QUANTIDADE_ONIBUS) {
         return texturasOnibus[obstaculo->indiceSprite];
     }
 
-    if (obstaculo->indiceSprite >= 0 && obstaculo->indiceSprite < QUANTIDADE_SPRITES_CARRO) {
+    if (obstaculo->indiceSprite >= 0 && obstaculo->indiceSprite < ASSETS_QUANTIDADE_CARROS) {
         return texturasCarro[obstaculo->indiceSprite];
     }
 
@@ -157,29 +144,29 @@ void InicializarListaObstaculos(ListaObstaculos *lista)
 
 void CarregarTexturasObstaculos(void)
 {
-    for (int i = 0; i < QUANTIDADE_SPRITES_CARRO; i++) {
+    for (int i = 0; i < ASSETS_QUANTIDADE_CARROS; i++) {
         if (!IsTextureValid(texturasCarro[i])) {
-            texturasCarro[i] = LoadTexture(CAMINHOS_SPRITES_CARRO[i]);
+            texturasCarro[i] = LoadTexture(ASSETS_CAMINHOS_CARROS[i]);
         }
     }
 
-    for (int i = 0; i < QUANTIDADE_SPRITES_ONIBUS; i++) {
+    for (int i = 0; i < ASSETS_QUANTIDADE_ONIBUS; i++) {
         if (!IsTextureValid(texturasOnibus[i])) {
-            texturasOnibus[i] = LoadTexture(CAMINHOS_SPRITES_ONIBUS[i]);
+            texturasOnibus[i] = LoadTexture(ASSETS_CAMINHOS_ONIBUS[i]);
         }
     }
 }
 
 void LiberarTexturasObstaculos(void)
 {
-    for (int i = 0; i < QUANTIDADE_SPRITES_CARRO; i++) {
+    for (int i = 0; i < ASSETS_QUANTIDADE_CARROS; i++) {
         if (IsTextureValid(texturasCarro[i])) {
             UnloadTexture(texturasCarro[i]);
             texturasCarro[i] = (Texture2D){ 0 };
         }
     }
 
-    for (int i = 0; i < QUANTIDADE_SPRITES_ONIBUS; i++) {
+    for (int i = 0; i < ASSETS_QUANTIDADE_ONIBUS; i++) {
         if (IsTextureValid(texturasOnibus[i])) {
             UnloadTexture(texturasOnibus[i]);
             texturasOnibus[i] = (Texture2D){ 0 };
@@ -285,6 +272,32 @@ bool RemoverPrimeiroObstaculoColidindo(ListaObstaculos *lista, const Jogador *jo
     }
 
     return false;
+}
+
+int RemoverObstaculosFaixa(ListaObstaculos *lista, int faixa)
+{
+    int removidos = 0;
+
+    if (lista == NULL || faixa < 0 || faixa >= QUANTIDADE_FAIXAS) {
+        return 0;
+    }
+
+    Obstaculo **ponteiroAtual = &lista->inicio;
+
+    while (*ponteiroAtual != NULL) {
+        Obstaculo *obstaculoAtual = *ponteiroAtual;
+
+        if (obstaculoAtual->faixa == faixa) {
+            *ponteiroAtual = obstaculoAtual->proximo;
+            free(obstaculoAtual);
+            lista->quantidade--;
+            removidos++;
+        } else {
+            ponteiroAtual = &obstaculoAtual->proximo;
+        }
+    }
+
+    return removidos;
 }
 
 void AplicarVelocidadeObstaculosFaixa(ListaObstaculos *lista, int faixa, float velocidade)

@@ -14,18 +14,41 @@ O jogador controla um carro na Avenida Agamenon Magalhães e precisa desviar de 
 - Dev 2, jogabilidade: `src/jogador.c`, `src/obstaculos.c`, `src/pista.c` e seus headers.
 - Dev 3, interface e dados: `src/interface.c`, `src/pontuacao.c`, `src/ranking.c` e seus headers.
 
-Veja o guia completo em `docs/guia_estrutura.md`.
-
 ## Estrutura
 
 ```text
-assets/      Recursos visuais e sonoros futuros.
-build/       Arquivos gerados pela compilação, ignorados pelo Git.
-data/        Arquivos de dados locais, como ranking.
-docs/        Guias do projeto.
-include/     Headers públicos dos módulos.
-src/         Implementações em C.
-Makefile     Comandos de compilação, execução e limpeza.
+assets/
+  veiculos/   Sprites do jogador, carros e onibus.
+  cenario/    Sprites da pista e elementos do ambiente.
+  powerups/   Sprites dos power-ups coletaveis.
+  interface/  Sprites de HUD, menu e botões.
+build/         Arquivos gerados pela compilação, ignorados pelo Git.
+data/          Arquivos de dados locais, como ranking.
+include/       Headers públicos dos módulos.
+src/           Implementações em C.
+Makefile       Comandos de compilação, execução e limpeza.
+```
+
+## Sprites esperados
+
+```text
+assets/veiculos/
+  carro_jogador.png
+  carro_verde.png
+  carro_branco.png
+  carro_vermelho.png
+  onibus_vermelho.png
+  onibus_amarelo.png
+
+assets/powerups/
+  escudo.png
+  baixa_velocidade.png
+  buzina.png
+  dobro_de_pontos.png
+  limpa_faixa.png
+
+assets/cenario/
+  tela.png
 ```
 
 ## Windows com PowerShell, sem WSL

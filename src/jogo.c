@@ -207,10 +207,10 @@ static void GerarObstaculosAleatorios(EstadoJogo *jogo)
     int faixaPrincipal = 0;
     int faixaExtra = 0;
 
-    if (jogo->tempoManutencao > 0.0f &&
-        jogo->faixaManutencao >= 0 &&
-        jogo->faixaManutencao < QUANTIDADE_FAIXAS) {
-        faixasReservadas[jogo->faixaManutencao] = true;
+    if (jogo->tempoInterdicaoFaixa > 0.0f &&
+        jogo->faixaInterditada >= 0 &&
+        jogo->faixaInterditada < QUANTIDADE_FAIXAS) {
+        faixasReservadas[jogo->faixaInterditada] = true;
     }
 
     if (!SortearFaixaDisponivel(&jogo->obstaculos, faixasReservadas, &faixaPrincipal)) {
@@ -262,6 +262,7 @@ void InicializarJogo(EstadoJogo *jogo)
     memset(jogo, 0, sizeof(*jogo));
     CarregarTexturaJogador();
     CarregarTexturasObstaculos();
+    CarregarTexturasPowerUps();
     InicializarListaObstaculos(&jogo->obstaculos);
     ReiniciarJogo(jogo);
 }
@@ -324,7 +325,7 @@ void DesenharJogo(const EstadoJogo *jogo)
     }
 
     DesenharPista(jogo->pistaLogica, jogo->deslocamentoCenario);
-    DesenharZonaManutencao(jogo);
+    DesenharZonaInterditada(jogo);
     DesenharObstaculos(&jogo->obstaculos);
     DesenharPowerUpColetavel(jogo);
     DesenharJogador(&jogo->jogador);
@@ -341,5 +342,6 @@ void FinalizarJogo(EstadoJogo *jogo)
 
     LiberarObstaculos(&jogo->obstaculos);
     LiberarTexturasObstaculos();
+    LiberarTexturasPowerUps();
     LiberarTexturaJogador();
 }

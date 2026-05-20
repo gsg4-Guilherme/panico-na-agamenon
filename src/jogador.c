@@ -2,10 +2,10 @@
 
 #include <stddef.h>
 
+#include "assets.h"
 #include "config.h"
 #include "raylib.h"
 
-#define CAMINHO_SPRITE_JOGADOR "assets/veiculos/carro_jogador.png"
 #define LARGURA_SPRITE_JOGADOR 60.0f
 #define ALTURA_SPRITE_JOGADOR 90.0f
 #define VELOCIDADE_TROCA_FAIXA 993.6f
@@ -72,7 +72,7 @@ void CarregarTexturaJogador(void)
         return;
     }
 
-    texturaJogador = LoadTexture(CAMINHO_SPRITE_JOGADOR);
+    texturaJogador = LoadTexture(ASSETS_CAMINHO_CARRO_JOGADOR);
 }
 
 void LiberarTexturaJogador(void)

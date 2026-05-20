@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "assets.h"
 #include "config.h"
 #include "jogador.h"
 #include "obstaculos.h"
@@ -11,12 +12,43 @@
 #define TAMANHO_SLOT_POWERUP 56.0f
 #define TEMPO_FREIO 5.0f
 #define TEMPO_DOBRO_PONTOS 6.0f
-#define TEMPO_MANUTENCAO 10.0f
-#define VELOCIDADE_LIMPA_FAIXA -420.0f
-#define MULTIPLICADOR_CHANCE_POWERUP_MANUTENCAO 1.70f
+#define TEMPO_INTERDICAO_FAIXA 10.0f
+#define MULTIPLICADOR_CHANCE_LIMPA_FAIXA 1.70f
 
 static const float LIMITE_SUPERIOR_SPAWN_POWERUP = -160.0f;
 static const float LIMITE_INFERIOR_SPAWN_POWERUP = 180.0f;
+
+static Texture2D texturasPowerUps[ASSETS_QUANTIDADE_POWERUPS] = { 0 };
+
+static int ObterIndiceAssetPowerUp(TipoPowerUp tipo)
+{
+    switch (tipo) {
+        case POWERUP_ESCUDO:
+            return ASSETS_POWERUP_ESCUDO;
+        case POWERUP_FREIO:
+            return ASSETS_POWERUP_BAIXA_VELOCIDADE;
+        case POWERUP_BUZINA:
+            return ASSETS_POWERUP_BUZINA;
+        case POWERUP_DOBRO_PONTOS:
+            return ASSETS_POWERUP_DOBRO_PONTOS;
+        case POWERUP_LIMPA_FAIXA:
+            return ASSETS_POWERUP_LIMPA_FAIXA;
+        case POWERUP_NENHUM:
+        default:
+            return -1;
+    }
+}
+
+static Texture2D ObterTexturaPowerUp(TipoPowerUp tipo)
+{
+    int indice = ObterIndiceAssetPowerUp(tipo);
+
+    if (indice < 0 || indice >= ASSETS_QUANTIDADE_POWERUPS) {
+        return (Texture2D){ 0 };
+    }
+
+    return texturasPowerUps[indice];
+}
 
 static const char *ObterRotuloPowerUp(TipoPowerUp tipo)
 {
@@ -25,12 +57,12 @@ static const char *ObterRotuloPowerUp(TipoPowerUp tipo)
             return "ESC";
         case POWERUP_FREIO:
             return "FRE";
-        case POWERUP_LIMPA_FAIXA:
-            return "LIM";
+        case POWERUP_BUZINA:
+            return "BUZ";
         case POWERUP_DOBRO_PONTOS:
             return "2X";
-        case POWERUP_MANUTENCAO:
-            return "MAN";
+        case POWERUP_LIMPA_FAIXA:
+            return "LIM";
         case POWERUP_NENHUM:
         default:
             return "UP";
@@ -44,11 +76,11 @@ static Color ObterCorPowerUp(TipoPowerUp tipo)
             return (Color){ 45, 145, 235, 255 };
         case POWERUP_FREIO:
             return (Color){ 235, 180, 45, 255 };
-        case POWERUP_LIMPA_FAIXA:
+        case POWERUP_BUZINA:
             return (Color){ 225, 75, 85, 255 };
         case POWERUP_DOBRO_PONTOS:
             return (Color){ 95, 200, 105, 255 };
-        case POWERUP_MANUTENCAO:
+        case POWERUP_LIMPA_FAIXA:
             return (Color){ 150, 90, 210, 255 };
         case POWERUP_NENHUM:
         default:
@@ -56,17 +88,17 @@ static Color ObterCorPowerUp(TipoPowerUp tipo)
     }
 }
 
-static bool ManutencaoAtiva(const EstadoJogo *jogo)
+static bool LimpaFaixaAtiva(const EstadoJogo *jogo)
 {
-    return jogo != NULL && jogo->tempoManutencao > 0.0f;
+    return jogo != NULL && jogo->tempoInterdicaoFaixa > 0.0f;
 }
 
 static float SortearIntervaloPowerUp(const EstadoJogo *jogo)
 {
     float intervalo = 6.5f + ((float)GetRandomValue(0, 450) / 100.0f);
 
-    if (ManutencaoAtiva(jogo)) {
-        intervalo /= MULTIPLICADOR_CHANCE_POWERUP_MANUTENCAO;
+    if (LimpaFaixaAtiva(jogo)) {
+        intervalo /= MULTIPLICADOR_CHANCE_LIMPA_FAIXA;
     }
 
     return intervalo;
@@ -74,7 +106,7 @@ static float SortearIntervaloPowerUp(const EstadoJogo *jogo)
 
 static TipoPowerUp SortearTipoPowerUp(void)
 {
-    return (TipoPowerUp)GetRandomValue(POWERUP_ESCUDO, POWERUP_MANUTENCAO);
+    return (TipoPowerUp)GetRandomValue(POWERUP_ESCUDO, POWERUP_LIMPA_FAIXA);
 }
 
 static float CalcularVelocidadePowerUp(const EstadoJogo *jogo)
@@ -203,19 +235,15 @@ static void AtivarPowerUpGuardado(EstadoJogo *jogo)
         case POWERUP_FREIO:
             jogo->tempoFreio = TEMPO_FREIO;
             break;
-        case POWERUP_LIMPA_FAIXA:
-            AplicarVelocidadeObstaculosFaixa(
-                &jogo->obstaculos,
-                jogo->jogador.faixaAtual,
-                VELOCIDADE_LIMPA_FAIXA
-            );
+        case POWERUP_BUZINA:
+            RemoverObstaculosFaixa(&jogo->obstaculos, jogo->jogador.faixaAtual);
             break;
         case POWERUP_DOBRO_PONTOS:
             jogo->tempoDobroPontos = TEMPO_DOBRO_PONTOS;
             break;
-        case POWERUP_MANUTENCAO:
-            jogo->tempoManutencao = TEMPO_MANUTENCAO;
-            jogo->faixaManutencao = jogo->jogador.faixaAtual;
+        case POWERUP_LIMPA_FAIXA:
+            jogo->tempoInterdicaoFaixa = TEMPO_INTERDICAO_FAIXA;
+            jogo->faixaInterditada = jogo->jogador.faixaAtual;
             break;
         case POWERUP_NENHUM:
         default:
@@ -249,12 +277,12 @@ static void AtualizarTemporizadoresPowerUps(EstadoJogo *jogo, float delta)
         }
     }
 
-    if (jogo->tempoManutencao > 0.0f) {
-        jogo->tempoManutencao -= delta;
+    if (jogo->tempoInterdicaoFaixa > 0.0f) {
+        jogo->tempoInterdicaoFaixa -= delta;
 
-        if (jogo->tempoManutencao <= 0.0f) {
-            jogo->tempoManutencao = 0.0f;
-            jogo->faixaManutencao = -1;
+        if (jogo->tempoInterdicaoFaixa <= 0.0f) {
+            jogo->tempoInterdicaoFaixa = 0.0f;
+            jogo->faixaInterditada = -1;
         }
     }
 }
@@ -307,21 +335,47 @@ static void DesenharQuadradoPowerUp(Rectangle caixa, TipoPowerUp tipo, bool vazi
     int larguraTexto = MeasureText(rotulo, tamanhoFonte);
     Color corFundo = vazio ? (Color){ 30, 32, 38, 210 } : ObterCorPowerUp(tipo);
     Color corBorda = vazio ? (Color){ 160, 165, 176, 210 } : RAYWHITE;
+    Texture2D textura = vazio ? (Texture2D){ 0 } : ObterTexturaPowerUp(tipo);
 
     DrawRectangleRec(caixa, corFundo);
-    DrawRectangleLinesEx(caixa, 2.0f, corBorda);
 
-    if (vazio) {
+    if (!vazio && IsTextureValid(textura)) {
+        Rectangle origem = { 0.0f, 0.0f, (float)textura.width, (float)textura.height };
+        DrawTexturePro(textura, origem, caixa, (Vector2){ 0.0f, 0.0f }, 0.0f, WHITE);
+        DrawRectangleLinesEx(caixa, 2.0f, corBorda);
         return;
     }
 
-    DrawText(
-        rotulo,
-        (int)(caixa.x + ((caixa.width - (float)larguraTexto) / 2.0f)),
-        (int)(caixa.y + ((caixa.height - (float)tamanhoFonte) / 2.0f)),
-        tamanhoFonte,
-        RAYWHITE
-    );
+    DrawRectangleLinesEx(caixa, 2.0f, corBorda);
+
+    if (!vazio) {
+        DrawText(
+            rotulo,
+            (int)(caixa.x + ((caixa.width - (float)larguraTexto) / 2.0f)),
+            (int)(caixa.y + ((caixa.height - (float)tamanhoFonte) / 2.0f)),
+            tamanhoFonte,
+            RAYWHITE
+        );
+    }
+}
+
+void CarregarTexturasPowerUps(void)
+{
+    for (int i = 0; i < ASSETS_QUANTIDADE_POWERUPS; i++) {
+        if (!IsTextureValid(texturasPowerUps[i]) && FileExists(ASSETS_CAMINHOS_POWERUPS[i])) {
+            texturasPowerUps[i] = LoadTexture(ASSETS_CAMINHOS_POWERUPS[i]);
+        }
+    }
+}
+
+void LiberarTexturasPowerUps(void)
+{
+    for (int i = 0; i < ASSETS_QUANTIDADE_POWERUPS; i++) {
+        if (IsTextureValid(texturasPowerUps[i])) {
+            UnloadTexture(texturasPowerUps[i]);
+            texturasPowerUps[i] = (Texture2D){ 0 };
+        }
+    }
 }
 
 void InicializarPowerUps(EstadoJogo *jogo)
@@ -332,9 +386,9 @@ void InicializarPowerUps(EstadoJogo *jogo)
 
     jogo->tempoFreio = 0.0f;
     jogo->tempoDobroPontos = 0.0f;
-    jogo->tempoManutencao = 0.0f;
+    jogo->tempoInterdicaoFaixa = 0.0f;
     jogo->pontosBonusPowerUp = 0.0f;
-    jogo->faixaManutencao = -1;
+    jogo->faixaInterditada = -1;
     jogo->powerUpGuardado = POWERUP_NENHUM;
     jogo->escudoAtivo = false;
     jogo->tempoGerarPowerUp = 0.0f;
@@ -373,17 +427,17 @@ void DesenharPowerUpColetavel(const EstadoJogo *jogo)
     DesenharQuadradoPowerUp(jogo->powerUpColetavel.caixaColisao, jogo->powerUpColetavel.tipo, false);
 }
 
-void DesenharZonaManutencao(const EstadoJogo *jogo)
+void DesenharZonaInterditada(const EstadoJogo *jogo)
 {
     if (jogo == NULL ||
-        jogo->tempoManutencao <= 0.0f ||
-        jogo->faixaManutencao < 0 ||
-        jogo->faixaManutencao >= QUANTIDADE_FAIXAS) {
+        jogo->tempoInterdicaoFaixa <= 0.0f ||
+        jogo->faixaInterditada < 0 ||
+        jogo->faixaInterditada >= QUANTIDADE_FAIXAS) {
         return;
     }
 
     float larguraFaixa = LARGURA_PISTA_VISUAL / QUANTIDADE_FAIXAS;
-    float x = CalcularCentroFaixa(jogo->faixaManutencao) - (larguraFaixa / 2.0f);
+    float x = CalcularCentroFaixa(jogo->faixaInterditada) - (larguraFaixa / 2.0f);
 
     DrawRectangleRec(
         (Rectangle){ x, 0.0f, larguraFaixa, (float)ALTURA_JANELA },
@@ -453,7 +507,7 @@ void DesenharIndicadoresPowerUps(const EstadoJogo *jogo)
         y += 24;
     }
 
-    if (jogo->tempoManutencao > 0.0f) {
-        DrawText(TextFormat("MANUTENCAO %.0f", jogo->tempoManutencao), x, y, 18, VIOLET);
+    if (jogo->tempoInterdicaoFaixa > 0.0f) {
+        DrawText(TextFormat("LIMPA FAIXA %.0f", jogo->tempoInterdicaoFaixa), x, y, 18, VIOLET);
     }
 }
