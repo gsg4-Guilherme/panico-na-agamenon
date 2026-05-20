@@ -263,6 +263,7 @@ void InicializarJogo(EstadoJogo *jogo)
     CarregarTexturaJogador();
     CarregarTexturasObstaculos();
     CarregarTexturasPowerUps();
+    CarregarTexturaPista();
     InicializarListaObstaculos(&jogo->obstaculos);
     ReiniciarJogo(jogo);
 }
@@ -343,5 +344,6 @@ void FinalizarJogo(EstadoJogo *jogo)
     LiberarObstaculos(&jogo->obstaculos);
     LiberarTexturasObstaculos();
     LiberarTexturasPowerUps();
+    LiberarTexturaPista();
     LiberarTexturaJogador();
 }

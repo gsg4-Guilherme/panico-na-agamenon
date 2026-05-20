@@ -2,12 +2,15 @@
 
 #include <stddef.h>
 
+#include "assets.h"
 #include "config.h"
 #include "raylib.h"
 
 #define LARGURA_ACOSTAMENTO 24.0f
 #define CICLO_ARVORES 820.0f
 #define CICLO_MARCAS_ASFALTO 760.0f
+
+static Texture2D texturaPista = { 0 };
 
 typedef struct ArvoreCenario {
     float deslocamentoX;
@@ -48,6 +51,18 @@ static float NormalizarDeslocamento(float deslocamento, float intervalo)
     }
 
     return deslocamento;
+}
+
+static void DesenharSpritePista(float deslocamentoCenario)
+{
+    Rectangle origem = { 0.0f, 0.0f, (float)texturaPista.width, (float)texturaPista.height };
+    float alturaTela = (float)ALTURA_JANELA;
+    float deslocamento = NormalizarDeslocamento(deslocamentoCenario, alturaTela);
+    Rectangle destinoSuperior = { 0.0f, deslocamento - alturaTela, (float)LARGURA_JANELA, alturaTela };
+    Rectangle destinoInferior = { 0.0f, deslocamento, (float)LARGURA_JANELA, alturaTela };
+
+    DrawTexturePro(texturaPista, origem, destinoSuperior, (Vector2){ 0.0f, 0.0f }, 0.0f, WHITE);
+    DrawTexturePro(texturaPista, origem, destinoInferior, (Vector2){ 0.0f, 0.0f }, 0.0f, WHITE);
 }
 
 static void DesenharArvore(float centroX, float baseY, float escala)
@@ -235,10 +250,32 @@ void AtualizarPista(
     }
 }
 
+void CarregarTexturaPista(void)
+{
+    if (IsTextureValid(texturaPista) || !FileExists(ASSETS_CAMINHO_PISTA)) {
+        return;
+    }
+
+    texturaPista = LoadTexture(ASSETS_CAMINHO_PISTA);
+}
+
+void LiberarTexturaPista(void)
+{
+    if (IsTextureValid(texturaPista)) {
+        UnloadTexture(texturaPista);
+        texturaPista = (Texture2D){ 0 };
+    }
+}
+
 void DesenharPista(const int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA], float deslocamentoCenario)
 {
     float larguraPista = LARGURA_PISTA_VISUAL;
     float margemEsquerda = CalcularMargemEsquerdaPista();
+
+    if (IsTextureValid(texturaPista)) {
+        DesenharSpritePista(deslocamentoCenario);
+        return;
+    }
 
     DesenharGramado(margemEsquerda, larguraPista, deslocamentoCenario);
     DesenharArvoresLaterais(margemEsquerda, larguraPista, deslocamentoCenario);
