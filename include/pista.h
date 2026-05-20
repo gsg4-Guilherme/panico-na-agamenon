@@ -6,6 +6,12 @@
 // Zera a matriz lógica da pista.
 void InicializarPista(int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA]);
 
+// Carrega o sprite da pista quando ele existir em assets/cenario/tela.png.
+void CarregarTexturaPista(void);
+
+// Libera o sprite da pista.
+void LiberarTexturaPista(void);
+
 // Atualiza a matriz com a posição aproximada do jogador e dos obstáculos.
 void AtualizarPista(
     int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA],
