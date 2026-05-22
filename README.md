@@ -129,9 +129,12 @@ O Makefile usa, no Linux, as flags comuns:
 
 ## Controles atuais
 
-- `ENTER`: iniciar ou reiniciar.
+- `ENTER`: iniciar modo 1 jogador ou reiniciar.
+- `ESPAÇO`: iniciar modo 2 jogadores.
 - `ESC`: voltar ao menu ou fechar no menu.
-- `Seta esquerda` e `Seta direita`: mudar de faixa.
+- Modo 1 jogador: `Seta esquerda` e `Seta direita` mudam de faixa; `Seta cima` usa power-up.
+- Modo 2 jogadores, jogador esquerdo: `A` e `D` mudam de faixa; `W` usa power-up.
+- Modo 2 jogadores, jogador direito: `Seta esquerda` e `Seta direita` mudam de faixa; `Seta cima` usa power-up.
 - Os obstáculos aparecem automaticamente em faixas aleatórias.
 
 ## Git e GitHub

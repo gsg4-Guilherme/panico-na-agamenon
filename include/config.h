@@ -4,6 +4,8 @@
 // Configurações principais da janela e do ritmo do jogo.
 #define LARGURA_JANELA 900
 #define ALTURA_JANELA 700
+#define LARGURA_DIVISORIA_DOIS_JOGADORES 16
+#define LARGURA_JANELA_DOIS_JOGADORES ((LARGURA_JANELA * 2) + LARGURA_DIVISORIA_DOIS_JOGADORES)
 #define FPS_ALVO 60
 #define TITULO_JANELA "Pânico na Agamenon"
 
