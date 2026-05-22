@@ -98,21 +98,30 @@ void InicializarJogador(Jogador *jogador)
     AtualizarCaixaColisaoJogador(jogador);
 }
 
-void AtualizarJogador(Jogador *jogador, float delta)
+void AtualizarJogadorComControles(Jogador *jogador, float delta, const ControlesJogador *controles)
 {
     float destinoX = 0.0f;
     float passoMaximo = 0.0f;
+    ControlesJogador controlesPadrao = {
+        .esquerda = KEY_LEFT,
+        .direita = KEY_RIGHT,
+        .powerUp = KEY_UP
+    };
+
+    if (controles == NULL) {
+        controles = &controlesPadrao;
+    }
 
     if (jogador == NULL) {
         return;
     }
 
-    // As setas escolhem a faixa-alvo; a posicao horizontal chega nela aos poucos.
-    if (IsKeyPressed(KEY_LEFT) && jogador->faixaAtual > 0) {
+    // As teclas escolhem a faixa-alvo; a posicao horizontal chega nela aos poucos.
+    if (IsKeyPressed(controles->esquerda) && jogador->faixaAtual > 0) {
         jogador->faixaAtual--;
     }
 
-    if (IsKeyPressed(KEY_RIGHT) && jogador->faixaAtual < QUANTIDADE_FAIXAS - 1) {
+    if (IsKeyPressed(controles->direita) && jogador->faixaAtual < QUANTIDADE_FAIXAS - 1) {
         jogador->faixaAtual++;
     }
 
@@ -120,6 +129,11 @@ void AtualizarJogador(Jogador *jogador, float delta)
     passoMaximo = jogador->velocidadeLateral * delta;
     jogador->posicaoX = MoverValorAte(jogador->posicaoX, destinoX, passoMaximo);
     AtualizarCaixaColisaoJogador(jogador);
+}
+
+void AtualizarJogador(Jogador *jogador, float delta)
+{
+    AtualizarJogadorComControles(jogador, delta, NULL);
 }
 
 void DesenharJogador(const Jogador *jogador)
