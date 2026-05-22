@@ -24,6 +24,23 @@ static const ControlesJogador CONTROLES_JOGADOR_DIREITA = {
     .powerUp = KEY_UP
 };
 
+static int MaximoInteiro(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+static void CentralizarJanela(int largura, int altura)
+{
+    int monitor = GetCurrentMonitor();
+    Vector2 posicaoMonitor = GetMonitorPosition(monitor);
+    int larguraMonitor = GetMonitorWidth(monitor);
+    int alturaMonitor = GetMonitorHeight(monitor);
+    int x = (int)posicaoMonitor.x + MaximoInteiro((larguraMonitor - largura) / 2, 0);
+    int y = (int)posicaoMonitor.y + MaximoInteiro((alturaMonitor - altura) / 2, 0);
+
+    SetWindowPosition(x, y);
+}
+
 static void AjustarTamanhoJanela(ModoJogo modo)
 {
     int larguraDesejada = modo == MODO_DOIS_JOGADORES
@@ -33,6 +50,8 @@ static void AjustarTamanhoJanela(ModoJogo modo)
     if (GetScreenWidth() != larguraDesejada || GetScreenHeight() != ALTURA_JANELA) {
         SetWindowSize(larguraDesejada, ALTURA_JANELA);
     }
+
+    CentralizarJanela(larguraDesejada, ALTURA_JANELA);
 }
 
 static void ReiniciarPartida(EstadoJogo *jogo1, EstadoJogo *jogo2, ModoJogo modo)
