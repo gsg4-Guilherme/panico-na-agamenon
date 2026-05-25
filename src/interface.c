@@ -41,16 +41,28 @@ static void DesenharEfeitoChuva(void)
     DesenharGotasChuva();
 }
 
+static void DesenharTextoCentralizado(const char *texto, int centroX, int y, int tamanhoFonte, Color cor)
+{
+    int larguraTexto = MeasureText(texto, tamanhoFonte);
+
+    DrawText(texto, centroX - (larguraTexto / 2), y, tamanhoFonte, cor);
+}
+
 void DesenharTelaMenu(void)
 {
     DrawText("Pânico na Agamenon", 250, 220, 38, RAYWHITE);
-    DrawText("ENTER inicia a partida", 315, 290, 22, LIGHTGRAY);
-    DrawText("ESC fecha a janela", 345, 325, 18, GRAY);
-    DrawText("Objetivo: desviar dos veículos e sobreviver mais tempo.", 175, 390, 20, RAYWHITE);
+    DrawText("ENTER - 1 jogador", 335, 290, 22, LIGHTGRAY);
+    DrawText("ESPAÇO - 2 jogadores", 315, 325, 22, LIGHTGRAY);
+    DrawText("ESC - sair", 390, 360, 18, GRAY);
+    DrawText("Objetivo: desviar dos veículos e sobreviver mais tempo.", 175, 420, 20, RAYWHITE);
 }
 
-void DesenharHud(const EstadoJogo *jogo)
+void DesenharHudComInstrucoes(const EstadoJogo *jogo, const char *instrucoes)
 {
+    const char *textoInstrucoes = instrucoes != NULL
+        ? instrucoes
+        : "Setas mudam de faixa | Seta cima ativa power-up";
+
     if (jogo == NULL) {
         return;
     }
@@ -59,7 +71,12 @@ void DesenharHud(const EstadoJogo *jogo)
     DrawText(TextFormat("Recorde: %d", jogo->melhorPontuacao), 30, 62, 20, LIGHTGRAY);
     DrawText(TextFormat("Obstáculos: %d", jogo->obstaculos.quantidade), 30, 90, 18, LIGHTGRAY);
     DesenharPowerUpGuardado(jogo);
-    DrawText("Setas mudam de faixa | Seta cima ativa power-up", 245, 650, 18, LIGHTGRAY);
+    DrawText(textoInstrucoes, 245, 650, 18, LIGHTGRAY);
+}
+
+void DesenharHud(const EstadoJogo *jogo)
+{
+    DesenharHudComInstrucoes(jogo, NULL);
 }
 
 void DesenharTelaGameOver(const EstadoJogo *jogo)
@@ -70,6 +87,33 @@ void DesenharTelaGameOver(const EstadoJogo *jogo)
     DrawText("Fim de jogo", 335, 250, 40, RAYWHITE);
     DrawText(TextFormat("Pontuação: %d", pontuacao), 365, 305, 22, LIGHTGRAY);
     DrawText("Pressione ENTER para tentar de novo", 255, 355, 22, LIGHTGRAY);
+}
+
+void DesenharTelaGameOverDoisJogadores(const EstadoJogo *jogador1, const EstadoJogo *jogador2)
+{
+    int pontuacao1 = jogador1 != NULL ? jogador1->pontuacaoAtual : 0;
+    int pontuacao2 = jogador2 != NULL ? jogador2->pontuacaoAtual : 0;
+    int centroX = GetScreenWidth() / 2;
+    const char *resultado = "Empate";
+
+    if (pontuacao1 > pontuacao2) {
+        resultado = "Jogador 1 venceu";
+    } else if (pontuacao2 > pontuacao1) {
+        resultado = "Jogador 2 venceu";
+    }
+
+    DrawRectangle(0, 0, GetScreenWidth(), ALTURA_JANELA, (Color){ 0, 0, 0, 165 });
+    DesenharTextoCentralizado("Fim de jogo", centroX, 210, 42, RAYWHITE);
+    DesenharTextoCentralizado(resultado, centroX, 270, 30, GOLD);
+    DesenharTextoCentralizado(TextFormat("Jogador 1: %d pontos", pontuacao1), centroX, 325, 22, LIGHTGRAY);
+    DesenharTextoCentralizado(TextFormat("Jogador 2: %d pontos", pontuacao2), centroX, 360, 22, LIGHTGRAY);
+    DesenharTextoCentralizado("Pressione ENTER para jogar de novo", centroX, 420, 22, LIGHTGRAY);
+}
+
+void DesenharAvisoJogadorBatido(void)
+{
+    DrawRectangle(0, 0, LARGURA_JANELA, ALTURA_JANELA, (Color){ 0, 0, 0, 110 });
+    DesenharTextoCentralizado("BATIDO", LARGURA_JANELA / 2, 310, 44, RAYWHITE);
 }
 
 void DesenharEventos(const EstadoJogo *jogo)
