@@ -396,13 +396,13 @@ void InicializarPowerUps(EstadoJogo *jogo)
     DesativarPowerUpColetavel(jogo);
 }
 
-void AtualizarPowerUps(EstadoJogo *jogo, float delta)
+void AtualizarPowerUpsComTecla(EstadoJogo *jogo, float delta, KeyboardKey teclaPowerUp)
 {
     if (jogo == NULL) {
         return;
     }
 
-    if (IsKeyPressed(KEY_UP)) {
+    if (IsKeyPressed(teclaPowerUp)) {
         AtivarPowerUpGuardado(jogo);
     }
 
@@ -416,6 +416,11 @@ void AtualizarPowerUps(EstadoJogo *jogo, float delta)
 
     AtualizarPowerUpColetavel(jogo, delta);
     AtualizarGeracaoPowerUp(jogo, delta);
+}
+
+void AtualizarPowerUps(EstadoJogo *jogo, float delta)
+{
+    AtualizarPowerUpsComTecla(jogo, delta, KEY_UP);
 }
 
 void DesenharPowerUpColetavel(const EstadoJogo *jogo)
