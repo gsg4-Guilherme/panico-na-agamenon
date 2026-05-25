@@ -7,10 +7,10 @@
 void DesenharTelaMenu(void);
 
 // Desenha pontuação, recorde e pequenas instruções temporárias.
-void DesenharHud(const EstadoJogo jogo);
+void DesenharHud(const EstadoJogo* jogo);
 
 // desenha a pontuação, recorde e instruções de controles customizadas
-void DesenharHudComInstrucoes(const EstadoJogo jogo, const char instrucoes);
+void DesenharHudComInstrucoes(const EstadoJogo* jogo, const char* instrucoes);
 
 // Desenha a camada de fim de jogo por cima da partida.
 void DesenharTelaGameOver(const EstadoJogo *jogo);
