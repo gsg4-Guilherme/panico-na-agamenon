@@ -35,6 +35,17 @@ typedef enum TipoPowerUp {
     POWERUP_LIMPA_FAIXA
 } TipoPowerUp;
 
+typedef enum ModoJogo {
+    MODO_UM_JOGADOR = 0,
+    MODO_DOIS_JOGADORES
+} ModoJogo;
+
+typedef struct ControlesJogador {
+    KeyboardKey esquerda;
+    KeyboardKey direita;
+    KeyboardKey powerUp;
+} ControlesJogador;
+
 // Representa o carro do jogador dentro da pista.
 typedef struct Jogador {
     int faixaAtual;
