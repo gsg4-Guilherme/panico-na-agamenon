@@ -10,13 +10,13 @@ void DesenharTelaMenu(void);
 void DesenharHud(const EstadoJogo jogo);
 
 // desenha a pontuação, recorde e instruções de controles customizadas
-void DesenharHudComInstrucoes(const EstadoJogojogo, const char instrucoes);
+void DesenharHudComInstrucoes(const EstadoJogo jogo, const char instrucoes);
 
 // Desenha a camada de fim de jogo por cima da partida.
-void DesenharTelaGameOver(const EstadoJogojogo);
+void DesenharTelaGameOver(const EstadoJogo *jogo);
 
 // desenha a camada final comparando as duas pontuações
-void DesenharTelaGameOverDoisJogadores(const EstadoJogo jogador1, const EstadoJogojogador2);
+void DesenharTelaGameOverDoisJogadores(const EstadoJogo* jogador1, const EstadoJogo* jogador2);
 
 // desenha um aviso sobre uma pista que já perdeu no modo dois jogadores
 void DesenharAvisoJogadorBatido(void);
