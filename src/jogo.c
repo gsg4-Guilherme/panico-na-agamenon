@@ -21,6 +21,7 @@ static const float INTERVALO_MINIMO_ENGARRAFAMENTO = 0.30f;
 static const float DISTANCIA_MINIMA_OBSTACULO_MESMA_FAIXA = 240.0f;
 static const float LIMITE_SUPERIOR_BANDA_SPAWN = -140.0f;
 static const float LIMITE_INFERIOR_BANDA_SPAWN = 220.0f;
+static bool sementeAleatoriaConfigurada = false;
 
 static float ObterMultiplicadorVelocidadeChuva(const EstadoJogo *jogo)
 {
@@ -258,7 +259,11 @@ void InicializarJogo(EstadoJogo *jogo)
         return;
     }
 
-    SetRandomSeed((unsigned int)time(NULL));
+    if (!sementeAleatoriaConfigurada) {
+        SetRandomSeed((unsigned int)time(NULL));
+        sementeAleatoriaConfigurada = true;
+    }
+
     memset(jogo, 0, sizeof(*jogo));
     CarregarTexturaJogador();
     CarregarTexturasObstaculos();
@@ -288,14 +293,14 @@ void ReiniciarJogo(EstadoJogo *jogo)
     jogo->jogoAtivo = true;
 }
 
-void AtualizarJogo(EstadoJogo *jogo, float delta)
+void AtualizarJogoComControles(EstadoJogo *jogo, float delta, const ControlesJogador *controles)
 {
     if (jogo == NULL || !jogo->jogoAtivo) {
         return;
     }
 
-    AtualizarJogador(&jogo->jogador, delta);
-    AtualizarPowerUps(jogo, delta);
+    AtualizarJogadorComControles(&jogo->jogador, delta, controles);
+    AtualizarPowerUpsComTecla(jogo, delta, controles != NULL ? controles->powerUp : KEY_UP);
     AtualizarPontuacao(jogo, delta);
     AtualizarDeslocamentoCenario(jogo, delta);
     AtualizarGeracaoObstaculos(jogo, delta);
@@ -319,7 +324,12 @@ void AtualizarJogo(EstadoJogo *jogo, float delta)
     }
 }
 
-void DesenharJogo(const EstadoJogo *jogo)
+void AtualizarJogo(EstadoJogo *jogo, float delta)
+{
+    AtualizarJogoComControles(jogo, delta, NULL);
+}
+
+void DesenharJogoComInstrucoes(const EstadoJogo *jogo, const char *instrucoes)
 {
     if (jogo == NULL) {
         return;
@@ -332,7 +342,12 @@ void DesenharJogo(const EstadoJogo *jogo)
     DesenharJogador(&jogo->jogador);
     DesenharEscudoJogador(jogo);
     DesenharEventos(jogo);
-    DesenharHud(jogo);
+    DesenharHudComInstrucoes(jogo, instrucoes);
+}
+
+void DesenharJogo(const EstadoJogo *jogo)
+{
+    DesenharJogoComInstrucoes(jogo, NULL);
 }
 
 void FinalizarJogo(EstadoJogo *jogo)
