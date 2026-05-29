@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "config.h"
-#include "raylib.h" // colisao
+#include "raylib.h"
 
 // Telas principais do jogo. A engine usa este enum para decidir o que atualizar e desenhar.
 typedef enum TelaAtual {
@@ -25,15 +25,6 @@ typedef enum TipoObstaculo {
     OBSTACULO_CARRO = 0,
     OBSTACULO_ONIBUS
 } TipoObstaculo;
-
-typedef enum TipoPowerUp {
-    POWERUP_NENHUM = 0,
-    POWERUP_ESCUDO,
-    POWERUP_FREIO,
-    POWERUP_BUZINA,
-    POWERUP_DOBRO_PONTOS,
-    POWERUP_LIMPA_FAIXA
-} TipoPowerUp;
 
 // Representa o carro do jogador dentro da pista.
 typedef struct Jogador {
@@ -65,16 +56,6 @@ typedef struct ListaObstaculos {
     int quantidade;
 } ListaObstaculos;
 
-// Item coletavel de power-up que aparece na pista.
-typedef struct PowerUpColetavel {
-    bool ativo;
-    TipoPowerUp tipo;
-    int faixa;
-    float posicaoY;
-    float velocidade;
-    Rectangle caixaColisao;
-} PowerUpColetavel;
-
 // Registro simples para leitura e escrita de pontuação.
 typedef struct RegistroPontuacao {
     char nome[32];
@@ -93,21 +74,9 @@ typedef struct EstadoJogo {
     float intervaloObstaculo;
     float velocidadeBase;
     float deslocamentoCenario;
-    float tempoGerarPowerUp;
-    float intervaloPowerUp;
-    float tempoFreio;
-    float tempoDobroPontos;
-    float tempoInterdicaoFaixa;
-    float pontosBonusPowerUp;
-    int faixaInterditada;
-    TipoPowerUp powerUpGuardado;
-    PowerUpColetavel powerUpColetavel;
     bool jogoAtivo;
     bool chuvaAtiva;
     bool engarrafamentoAtivo;
-    bool escudoAtivo;
 } EstadoJogo;
 
 #endif
-
-//aqui tem as structs e enum ,

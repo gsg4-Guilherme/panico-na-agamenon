@@ -31,15 +31,12 @@ static float CalcularMargemEsquerdaPista(void)
     return (LARGURA_JANELA - LARGURA_PISTA_VISUAL) / 2.0f;
 }
 
+/* Eu divido a sobra horizontal em dois pra achar onde a pista comeca pela esquerda. */
+
 static float NormalizarDeslocamento(float deslocamento, float intervalo)
 {
     if (intervalo <= 0.0f) {
         return 0.0f;
-    }
-
-    if (deslocamento >= intervalo || deslocamento <= -intervalo) {
-        int repeticoes = (int)(deslocamento / intervalo);
-        deslocamento -= intervalo * repeticoes;
     }
 
     while (deslocamento >= intervalo) {
@@ -53,6 +50,8 @@ static float NormalizarDeslocamento(float deslocamento, float intervalo)
     return deslocamento;
 }
 
+/* Eu prendo o deslocamento dentro do intervalo, ai o cenario repete sem o numero crescer pra sempre. */
+
 static void DesenharSpritePista(float deslocamentoCenario)
 {
     Rectangle origem = { 0.0f, 0.0f, (float)texturaPista.width, (float)texturaPista.height };
@@ -64,6 +63,8 @@ static void DesenharSpritePista(float deslocamentoCenario)
     DrawTexturePro(texturaPista, origem, destinoSuperior, (Vector2){ 0.0f, 0.0f }, 0.0f, WHITE);
     DrawTexturePro(texturaPista, origem, destinoInferior, (Vector2){ 0.0f, 0.0f }, 0.0f, WHITE);
 }
+
+/* Eu desenho a pista duas vez empilhada e desloco junto, dando a ilusao de rolagem sem fim. */
 
 static void DesenharArvore(float centroX, float baseY, float escala)
 {
@@ -85,6 +86,8 @@ static void DesenharArvore(float centroX, float baseY, float escala)
     DrawCircleV((Vector2){ centroX + (18.0f * escala), baseY - (31.0f * escala) }, 20.0f * escala, (Color){ 23, 96, 50, 255 });
     DrawCircleV((Vector2){ centroX + (2.0f * escala), baseY - (22.0f * escala) }, 18.0f * escala, (Color){ 42, 145, 70, 255 });
 }
+
+/* Eu monto a arvore com tronco + circulos verdes, e o parametro escala muda o tamanho dela. */
 
 static void DesenharGramado(float margemEsquerda, float larguraPista, float deslocamentoCenario)
 {
@@ -108,6 +111,8 @@ static void DesenharGramado(float margemEsquerda, float larguraPista, float desl
         }
     }
 }
+
+/* Eu pinto o fundo de verde e rabisco tufos de grama que descem junto com o deslocamento. */
 
 static void DesenharArvoresLaterais(float margemEsquerda, float larguraPista, float deslocamentoCenario)
 {
@@ -139,6 +144,8 @@ static void DesenharArvoresLaterais(float margemEsquerda, float larguraPista, fl
     }
 }
 
+/* Eu guardo uma lista fixa de arvore dos dois lado e desloco a posicao Y junto com a pista. */
+
 static void DesenharAsfalto(float margemEsquerda, float larguraPista, float deslocamentoCenario)
 {
     static const MarcaAsfalto marcas[] = {
@@ -167,6 +174,8 @@ static void DesenharAsfalto(float margemEsquerda, float larguraPista, float desl
     }
 }
 
+/* Eu desenho o asfalto, as duas borda escuras e marquinhas que descem com o deslocamento. */
+
 static void DesenharAcostamento(float margemEsquerda, float larguraPista)
 {
     int xEsquerda = (int)(margemEsquerda - LARGURA_ACOSTAMENTO);
@@ -179,6 +188,8 @@ static void DesenharAcostamento(float margemEsquerda, float larguraPista)
     DrawLine(xEsquerda, 0, xEsquerda, ALTURA_JANELA, (Color){ 65, 69, 63, 255 });
     DrawLine(xDireita + (int)LARGURA_ACOSTAMENTO, 0, xDireita + (int)LARGURA_ACOSTAMENTO, ALTURA_JANELA, (Color){ 65, 69, 63, 255 });
 }
+
+/* Eu boto um retangulo cinza nos dois lado e uma linha clara separando do asfalto. */
 
 static void DesenharFaixasTracejadas(float margemEsquerda, float larguraPista, float deslocamentoCenario)
 {
@@ -195,6 +206,8 @@ static void DesenharFaixasTracejadas(float margemEsquerda, float larguraPista, f
         }
     }
 }
+
+/* Eu divido a pista em faixa e repito risquinhos amarelo que descem junto com o cenario. */
 
 static void DesenharMarcadoresLogicos(const int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA], float margemEsquerda, float larguraPista)
 {
@@ -216,6 +229,8 @@ static void DesenharMarcadoresLogicos(const int pistaLogica[LINHAS_PISTA][COLUNA
     }
 }
 
+/* Eu mostro a matriz da pista com bolinhas: azul pro jogador, vermelha pro obstaculo (so debug). */
+
 void InicializarPista(int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA])
 {
     for (int linha = 0; linha < LINHAS_PISTA; linha++) {
@@ -224,6 +239,8 @@ void InicializarPista(int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA])
         }
     }
 }
+
+/* Eu zero toda a matriz da pista varrendo linha por coluna. */
 
 void AtualizarPista(
     int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA],
@@ -250,6 +267,8 @@ void AtualizarPista(
     }
 }
 
+/* Eu zero a matriz, marco a faixa do jogador com 1 e cada obstaculo com 2 na celula dele. */
+
 void CarregarTexturaPista(void)
 {
     if (IsTextureValid(texturaPista) || !FileExists(ASSETS_CAMINHO_PISTA)) {
@@ -259,6 +278,8 @@ void CarregarTexturaPista(void)
     texturaPista = LoadTexture(ASSETS_CAMINHO_PISTA);
 }
 
+/* Eu so carrego se o arquivo existe e a textura ainda nao foi carregada. */
+
 void LiberarTexturaPista(void)
 {
     if (IsTextureValid(texturaPista)) {
@@ -266,6 +287,8 @@ void LiberarTexturaPista(void)
         texturaPista = (Texture2D){ 0 };
     }
 }
+
+/* Eu solto a textura quando ela ta valida e zero a variavel pra nao restar referencia antiga. */
 
 void DesenharPista(const int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA], float deslocamentoCenario)
 {
@@ -284,3 +307,5 @@ void DesenharPista(const int pistaLogica[LINHAS_PISTA][COLUNAS_PISTA], float des
     DesenharFaixasTracejadas(margemEsquerda, larguraPista, deslocamentoCenario);
     DesenharMarcadoresLogicos(pistaLogica, margemEsquerda, larguraPista);
 }
+
+/* Eu uso o sprite da pista quando existe; sem ele, desenho grama, arvore, asfalto e faixas na mao. */

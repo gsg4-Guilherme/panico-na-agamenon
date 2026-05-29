@@ -6,7 +6,7 @@
 // Desenha a tela inicial do projeto.
 void DesenharTelaMenu(void);
 
-// Desenha pontuação, recorde e pequenas instruções temporárias.
+// Desenha pontuação, recorde e instruções de controles.
 void DesenharHud(const EstadoJogo *jogo);
 
 // Desenha a camada de fim de jogo por cima da partida.

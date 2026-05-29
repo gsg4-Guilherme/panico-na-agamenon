@@ -16,6 +16,4 @@
 // Caminho do arquivo simples que será usado para guardar o melhor recorde.
 #define CAMINHO_RANKING "data/ranking.txt"
 
-#endif //tem que botar pra fechar o codigo uskara
-
-//arquvio de definir valores que iremos usar em outras partes do codigo.
+#endif

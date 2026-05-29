@@ -15,7 +15,7 @@ void LiberarTexturaJogador(void);
 // Prepara o carro do jogador no centro da pista.
 void InicializarJogador(Jogador *jogador);
 
-// Lê o teclado e muda a faixa do carro.
+// Lê as setas do teclado e muda a faixa do carro.
 void AtualizarJogador(Jogador *jogador, float delta);
 
 // Desenha o carro do jogador.

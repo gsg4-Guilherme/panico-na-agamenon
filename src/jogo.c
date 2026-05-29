@@ -9,28 +9,25 @@
 #include "obstaculos.h"
 #include "pista.h"
 #include "pontuacao.h"
-#include "powerups.h"
 #include "raylib.h"
 #include "ranking.h"
 
-static const float MULTIPLICADOR_INTERVALO_ENGARRAFAMENTO = 0.65f;
-static const float MULTIPLICADOR_VELOCIDADE_CHUVA = 1.25f;
-static const float MULTIPLICADOR_VELOCIDADE_FREIO = 0.45f;
-static const float INTERVALO_MINIMO_NORMAL = 0.32f;
-static const float INTERVALO_MINIMO_ENGARRAFAMENTO = 0.30f;
-static const float DISTANCIA_MINIMA_OBSTACULO_MESMA_FAIXA = 240.0f;
-static const float LIMITE_SUPERIOR_BANDA_SPAWN = -140.0f;
-static const float LIMITE_INFERIOR_BANDA_SPAWN = 220.0f;
+#define MULTIPLICADOR_INTERVALO_ENGARRAFAMENTO 0.65f
+#define MULTIPLICADOR_VELOCIDADE_CHUVA 1.25f
+#define INTERVALO_MINIMO_NORMAL 0.32f
+#define INTERVALO_MINIMO_ENGARRAFAMENTO 0.30f
+#define DISTANCIA_MINIMA_OBSTACULO_MESMA_FAIXA 240.0f
+#define LIMITE_SUPERIOR_BANDA_SPAWN (-140.0f)
+#define LIMITE_INFERIOR_BANDA_SPAWN 220.0f
+
+static bool sementeAleatoriaConfigurada = false;
 
 static float ObterMultiplicadorVelocidadeChuva(const EstadoJogo *jogo)
 {
     return (jogo != NULL && jogo->chuvaAtiva) ? MULTIPLICADOR_VELOCIDADE_CHUVA : 1.0f;
 }
 
-static float ObterMultiplicadorVelocidadeFreio(const EstadoJogo *jogo)
-{
-    return (jogo != NULL && jogo->tempoFreio > 0.0f) ? MULTIPLICADOR_VELOCIDADE_FREIO : 1.0f;
-}
+/* Eu devolvo multiplicador maior quando a chuva esta ativa, senao deixa em 1.0 (sem efeito). */
 
 static float CalcularProximoIntervaloObstaculo(const EstadoJogo *jogo)
 {
@@ -56,6 +53,8 @@ static float CalcularProximoIntervaloObstaculo(const EstadoJogo *jogo)
     return intervalo;
 }
 
+/* Eu encurto o intervalo conforme o tempo passa e somo variacao aleatoria pra nao ficar igual. */
+
 static TipoObstaculo SortearTipoObstaculo(const EstadoJogo *jogo)
 {
     int chanceOnibus = (jogo != NULL && jogo->engarrafamentoAtivo) ? 50 : 30;
@@ -67,6 +66,21 @@ static TipoObstaculo SortearTipoObstaculo(const EstadoJogo *jogo)
     return OBSTACULO_CARRO;
 }
 
+/* Eu sorteio carro ou onibus; no engarrafamento a chance de onibus sobe (50% vs 30%). */
+
+float CalcularAumentoVelocidadePorTempo(float tempoSobrevivencia)
+{
+    float aumento = tempoSobrevivencia * 5.0f;
+
+    if (aumento > 220.0f) {
+        aumento = 220.0f;
+    }
+
+    return aumento;
+}
+
+/* Eu fiz essa conta uma vez so, ai obstaculo e cenario usam a mesma regra de aceleracao. */
+
 static bool DeveGerarObstaculoExtra(const EstadoJogo *jogo)
 {
     int chanceObstaculoExtra = (jogo != NULL && jogo->engarrafamentoAtivo) ? 30 : 20;
@@ -74,12 +88,16 @@ static bool DeveGerarObstaculoExtra(const EstadoJogo *jogo)
     return GetRandomValue(1, 100) <= chanceObstaculoExtra;
 }
 
+/* Eu decido se spawno um segundo obstaculo no mesmo ciclo; chance maior no engarrafamento. */
+
 static bool ObstaculoEstaNaBandaSpawn(const Obstaculo *obstaculo)
 {
     return obstaculo != NULL &&
         obstaculo->posicaoY >= LIMITE_SUPERIOR_BANDA_SPAWN &&
         obstaculo->posicaoY <= LIMITE_INFERIOR_BANDA_SPAWN;
 }
+
+/* Eu checo se o obstaculo esta na zona de spawn, usado pra nao bloquear todas as faixa de cima. */
 
 static bool ExisteObstaculoProximoNaFaixa(const ListaObstaculos *lista, int faixa)
 {
@@ -96,6 +114,8 @@ static bool ExisteObstaculoProximoNaFaixa(const ListaObstaculos *lista, int faix
 
     return false;
 }
+
+/* Eu evito spawnar dois obstaculos colados na mesma faixa checando distancia minima. */
 
 static int ContarFaixasBloqueadasNaBandaSpawn(
     const ListaObstaculos *lista,
@@ -130,6 +150,8 @@ static int ContarFaixasBloqueadasNaBandaSpawn(
     return quantidadeBloqueadas;
 }
 
+/* Eu conto quantas faixa estao bloqueadas na banda de spawn, somando reservadas + ocupadas. */
+
 static bool FaixaPodeReceberObstaculo(
     const ListaObstaculos *lista,
     int faixa,
@@ -160,6 +182,8 @@ static bool FaixaPodeReceberObstaculo(
     return ContarFaixasBloqueadasNaBandaSpawn(lista, faixasComCandidata) < QUANTIDADE_FAIXAS;
 }
 
+/* Eu valido a faixa olhando limite, reserva, vizinhanca e se ela nao fecharia todas as faixa. */
+
 static bool SortearFaixaDisponivel(
     const ListaObstaculos *lista,
     const bool faixasReservadas[QUANTIDADE_FAIXAS],
@@ -188,30 +212,24 @@ static bool SortearFaixaDisponivel(
     return true;
 }
 
+/* Eu listo so as faixa validas e sorteio uma delas, garantindo que o spawn vai dar certo. */
+
 static bool GerarObstaculoNaFaixa(EstadoJogo *jogo, int faixa)
 {
     TipoObstaculo tipo = SortearTipoObstaculo(jogo);
-    float aumentoPorTempo = jogo->tempoSobrevivencia * 5.0f;
+    float aumentoPorTempo = CalcularAumentoVelocidadePorTempo(jogo->tempoSobrevivencia);
     float variacaoVelocidade = (float)GetRandomValue(-20, 35);
-
-    if (aumentoPorTempo > 220.0f) {
-        aumentoPorTempo = 220.0f;
-    }
 
     return AdicionarObstaculo(&jogo->obstaculos, faixa, jogo->velocidadeBase + aumentoPorTempo + variacaoVelocidade, tipo);
 }
+
+/* Eu sorteio tipo + variacao, somo o aumento por tempo e mando o obstaculo entrar na lista. */
 
 static void GerarObstaculosAleatorios(EstadoJogo *jogo)
 {
     bool faixasReservadas[QUANTIDADE_FAIXAS] = { false };
     int faixaPrincipal = 0;
     int faixaExtra = 0;
-
-    if (jogo->tempoInterdicaoFaixa > 0.0f &&
-        jogo->faixaInterditada >= 0 &&
-        jogo->faixaInterditada < QUANTIDADE_FAIXAS) {
-        faixasReservadas[jogo->faixaInterditada] = true;
-    }
 
     if (!SortearFaixaDisponivel(&jogo->obstaculos, faixasReservadas, &faixaPrincipal)) {
         return;
@@ -229,6 +247,8 @@ static void GerarObstaculosAleatorios(EstadoJogo *jogo)
     }
 }
 
+/* Eu spawno um obstaculo principal e, com alguma chance, mais um extra em outra faixa livre. */
+
 static void AtualizarGeracaoObstaculos(EstadoJogo *jogo, float delta)
 {
     jogo->tempoGerarObstaculo += delta;
@@ -240,17 +260,17 @@ static void AtualizarGeracaoObstaculos(EstadoJogo *jogo, float delta)
     }
 }
 
+/* Eu acumulo delta no contador; quando bate o intervalo, spawno e sorteio o proximo. */
+
 static void AtualizarDeslocamentoCenario(EstadoJogo *jogo, float delta)
 {
-    float aumentoPorTempo = jogo->tempoSobrevivencia * 5.0f;
-
-    if (aumentoPorTempo > 220.0f) {
-        aumentoPorTempo = 220.0f;
-    }
+    float aumentoPorTempo = CalcularAumentoVelocidadePorTempo(jogo->tempoSobrevivencia);
 
     jogo->deslocamentoCenario += (jogo->velocidadeBase + aumentoPorTempo) *
         ObterMultiplicadorVelocidadeChuva(jogo) * delta;
 }
+
+/* Eu rolo o cenario pra baixo aplicando velocidade base + aumento por tempo + bonus de chuva. */
 
 void InicializarJogo(EstadoJogo *jogo)
 {
@@ -258,15 +278,20 @@ void InicializarJogo(EstadoJogo *jogo)
         return;
     }
 
-    SetRandomSeed((unsigned int)time(NULL));
+    if (!sementeAleatoriaConfigurada) {
+        SetRandomSeed((unsigned int)time(NULL));
+        sementeAleatoriaConfigurada = true;
+    }
+
     memset(jogo, 0, sizeof(*jogo));
     CarregarTexturaJogador();
     CarregarTexturasObstaculos();
-    CarregarTexturasPowerUps();
     CarregarTexturaPista();
     InicializarListaObstaculos(&jogo->obstaculos);
     ReiniciarJogo(jogo);
 }
+
+/* Eu inicio o estado uma vez: semeio o random, carrego as textura e chamo reiniciar pra preparar. */
 
 void ReiniciarJogo(EstadoJogo *jogo)
 {
@@ -279,7 +304,6 @@ void ReiniciarJogo(EstadoJogo *jogo)
     InicializarJogador(&jogo->jogador);
     InicializarPista(jogo->pistaLogica);
     InicializarPontuacao(jogo);
-    InicializarPowerUps(jogo);
 
     jogo->tempoGerarObstaculo = 0.0f;
     jogo->intervaloObstaculo = 1.0f;
@@ -288,6 +312,8 @@ void ReiniciarJogo(EstadoJogo *jogo)
     jogo->jogoAtivo = true;
 }
 
+/* Eu solto a lista de obstaculo e reseto jogador, pista, pontos e contadores. */
+
 void AtualizarJogo(EstadoJogo *jogo, float delta)
 {
     if (jogo == NULL || !jogo->jogoAtivo) {
@@ -295,29 +321,20 @@ void AtualizarJogo(EstadoJogo *jogo, float delta)
     }
 
     AtualizarJogador(&jogo->jogador, delta);
-    AtualizarPowerUps(jogo, delta);
     AtualizarPontuacao(jogo, delta);
     AtualizarDeslocamentoCenario(jogo, delta);
     AtualizarGeracaoObstaculos(jogo, delta);
 
-    AtualizarObstaculos(
-        &jogo->obstaculos,
-        delta * ObterMultiplicadorVelocidadeChuva(jogo) * ObterMultiplicadorVelocidadeFreio(jogo)
-    );
+    AtualizarObstaculos(&jogo->obstaculos, delta * ObterMultiplicadorVelocidadeChuva(jogo));
     AtualizarPista(jogo->pistaLogica, &jogo->jogador, &jogo->obstaculos);
 
     if (VerificarColisaoJogadorObstaculos(&jogo->jogador, &jogo->obstaculos)) {
-        if (jogo->escudoAtivo) {
-            RemoverPrimeiroObstaculoColidindo(&jogo->obstaculos, &jogo->jogador);
-            jogo->escudoAtivo = false;
-            AtualizarPista(jogo->pistaLogica, &jogo->jogador, &jogo->obstaculos);
-            return;
-        }
-
         jogo->jogoAtivo = false;
         SalvarPontuacaoSeRecorde(CAMINHO_RANKING, jogo->pontuacaoAtual);
     }
 }
+
+/* Eu atualizo nessa ordem: jogador, pontos, cenario, obstaculo, pista e por fim a colisao. */
 
 void DesenharJogo(const EstadoJogo *jogo)
 {
@@ -326,14 +343,13 @@ void DesenharJogo(const EstadoJogo *jogo)
     }
 
     DesenharPista(jogo->pistaLogica, jogo->deslocamentoCenario);
-    DesenharZonaInterditada(jogo);
     DesenharObstaculos(&jogo->obstaculos);
-    DesenharPowerUpColetavel(jogo);
     DesenharJogador(&jogo->jogador);
-    DesenharEscudoJogador(jogo);
     DesenharEventos(jogo);
     DesenharHud(jogo);
 }
+
+/* Eu desenho de baixo pra cima: pista, obstaculo, jogador, efeitos e o HUD. */
 
 void FinalizarJogo(EstadoJogo *jogo)
 {
@@ -343,7 +359,8 @@ void FinalizarJogo(EstadoJogo *jogo)
 
     LiberarObstaculos(&jogo->obstaculos);
     LiberarTexturasObstaculos();
-    LiberarTexturasPowerUps();
     LiberarTexturaPista();
     LiberarTexturaJogador();
 }
+
+/* Eu solto a lista de obstaculo e descarrego todas as textura antes de fechar o programa. */

@@ -1,7 +1,5 @@
 #include "jogador.h"
-
 #include <stddef.h>
-
 #include "assets.h"
 #include "config.h"
 #include "raylib.h"
@@ -27,6 +25,8 @@ static Rectangle ObterRetanguloVisualJogador(const Jogador *jogador)
     };
 }
 
+/* Eu monto o retangulo visual a partir da posicao e tamanho, pra passar pro Draw da raylib. */
+
 static void AtualizarCaixaColisaoJogador(Jogador *jogador)
 {
     float larguraColisao = 0.0f;
@@ -46,6 +46,8 @@ static void AtualizarCaixaColisaoJogador(Jogador *jogador)
     };
 }
 
+/* Eu encolho a caixa de colisao (escala < 1) e centralizo dentro do sprite pra batida nao parecer injusta. */
+
 static float MoverValorAte(float valorAtual, float valorDestino, float passoMaximo)
 {
     float diferenca = valorDestino - valorAtual;
@@ -57,6 +59,8 @@ static float MoverValorAte(float valorAtual, float valorDestino, float passoMaxi
     return valorAtual + (diferenca > 0.0f ? passoMaximo : -passoMaximo);
 }
 
+/* Eu ando ate o destino em passos limitados; se ja ta dentro do passo, grudo no destino. */
+
 float CalcularCentroFaixa(int faixa)
 {
     float larguraPista = LARGURA_PISTA_VISUAL;
@@ -65,6 +69,8 @@ float CalcularCentroFaixa(int faixa)
 
     return margemEsquerda + (larguraFaixa * faixa) + (larguraFaixa / 2.0f);
 }
+
+/* Eu divido a largura da pista pelas faixa e devolvo o centro X da faixa pedida. */
 
 void CarregarTexturaJogador(void)
 {
@@ -75,6 +81,8 @@ void CarregarTexturaJogador(void)
     texturaJogador = LoadTexture(ASSETS_CAMINHO_CARRO_JOGADOR);
 }
 
+/* Eu so carrego se ainda nao ta valida, pra nao recarregar imagem toda vez. */
+
 void LiberarTexturaJogador(void)
 {
     if (IsTextureValid(texturaJogador)) {
@@ -82,6 +90,8 @@ void LiberarTexturaJogador(void)
         texturaJogador = (Texture2D){ 0 };
     }
 }
+
+/* Eu solto a textura quando ela ta valida e zero a variavel pra nao restar referencia antiga. */
 
 void InicializarJogador(Jogador *jogador)
 {
@@ -97,6 +107,8 @@ void InicializarJogador(Jogador *jogador)
     jogador->posicaoY = ALTURA_JANELA - 130.0f;
     AtualizarCaixaColisaoJogador(jogador);
 }
+
+/* Eu coloco o jogador na faixa do meio com tamanho e velocidade definido, e ja ajeito a colisao. */
 
 void AtualizarJogador(Jogador *jogador, float delta)
 {
@@ -122,6 +134,8 @@ void AtualizarJogador(Jogador *jogador, float delta)
     AtualizarCaixaColisaoJogador(jogador);
 }
 
+/* Eu uso as setas pra trocar de faixa alvo, e movo o X aos poucos pra dar deslize suave. */
+
 void DesenharJogador(const Jogador *jogador)
 {
     Rectangle retanguloVisual = { 0 };
@@ -142,3 +156,5 @@ void DesenharJogador(const Jogador *jogador)
     DrawRectangleLinesEx(retanguloVisual, 2.0f, RAYWHITE);
     DrawText("CARRO", (int)jogador->posicaoX + 2, (int)jogador->posicaoY + 34, 14, RAYWHITE);
 }
+
+/* Eu uso o sprite quando ele esta valido; sem ele, desenho um retangulo de reserva escrito CARRO. */

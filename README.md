@@ -1,35 +1,32 @@
 # Pânico na Agamenon
 
-Esqueleto em C com Raylib para o jogo “Pânico na Agamenon”.
+Jogo 2D top-down de trânsito feito em C com Raylib.
 
-O objetivo é ter uma base compilável, comentada e separada por responsabilidades, sem entregar o jogo completo pronto. A ideia é que cada pessoa do grupo consiga entender onde mexer e continuar a implementação com o próprio estilo.
+O jogador controla um carro na Avenida Agamenon Magalhães e precisa desviar dos veículos que descem pela tela. A pontuação cresce com o tempo de sobrevivência, e o melhor recorde é salvo em arquivo.
 
-## Ideia do jogo
+## Funcionalidades
 
-O jogador controla um carro na Avenida Agamenon Magalhães e precisa desviar de veículos que descem pela tela. A pontuação cresce pelo tempo de sobrevivência. Depois, o grupo pode completar dificuldade progressiva, chuva, engarrafamento, telas finais e recordes.
-
-## Divisão por devs
-
-- Dev 1, engine e núcleo: `src/main.c`, `src/engine.c`, `include/engine.h`, `include/config.h`.
-- Dev 2, jogabilidade: `src/jogador.c`, `src/obstaculos.c`, `src/pista.c` e seus headers.
-- Dev 3, interface e dados: `src/interface.c`, `src/pontuacao.c`, `src/ranking.c` e seus headers.
+- Jogador único controlado por setas.
+- Pista com cinco faixas e cenário animado.
+- Carros e ônibus aleatórios como obstáculos.
+- Chuva e engarrafamento entram em ciclos conforme o tempo de jogo.
+- Pontuação por sobrevivência e ranking persistido em `data/ranking.txt`.
+- Menu, partida e tela de fim de jogo.
 
 ## Estrutura
 
 ```text
 assets/
   veiculos/   Sprites do jogador, carros e onibus.
-  cenario/    Sprites da pista e elementos do ambiente.
-  powerups/   Sprites dos power-ups coletaveis.
-  interface/  Sprites de HUD, menu e botões.
+  cenario/    Sprite da pista.
 build/         Arquivos gerados pela compilação, ignorados pelo Git.
-data/          Arquivos de dados locais, como ranking.
+data/          Arquivo do ranking.
 include/       Headers públicos dos módulos.
 src/           Implementações em C.
 Makefile       Comandos de compilação, execução e limpeza.
 ```
 
-## Sprites esperados
+## Sprites usados
 
 ```text
 assets/veiculos/
@@ -39,13 +36,6 @@ assets/veiculos/
   carro_vermelho.png
   onibus_vermelho.png
   onibus_amarelo.png
-
-assets/powerups/
-  escudo.png
-  baixa_velocidade.png
-  buzina.png
-  dobro_de_pontos.png
-  limpa_faixa.png
 
 assets/cenario/
   tela.png
@@ -127,30 +117,11 @@ O Makefile usa, no Linux, as flags comuns:
 -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ```
 
-## Controles atuais
+## Controles
 
-- `ENTER`: iniciar ou reiniciar.
-- `ESC`: voltar ao menu ou fechar no menu.
-- `Seta esquerda` e `Seta direita`: mudar de faixa.
-- Os obstáculos aparecem automaticamente em faixas aleatórias.
-
-## Git e GitHub
-
-Este repositório foi pensado para commits por etapa:
-
-```bash
-git log --oneline --decorate --all
-```
-
-Para enviar ao GitHub depois de instalar o `gh`:
-
-```powershell
-gh auth login
-gh repo create jogopif --source . --private --push
-git push --all origin
-```
-
-Se o professor exigir repositório público, troque `--private` por `--public`.
+- `ENTER`: iniciar o jogo no menu ou reiniciar no game over.
+- `ESC`: voltar ao menu durante a partida, ou fechar a janela no menu.
+- `Seta esquerda` e `Seta direita`: trocar de faixa.
 
 ## Referências
 

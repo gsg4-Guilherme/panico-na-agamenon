@@ -1,7 +1,29 @@
 #include "engine.h"
+
 #include "interface.h"
 #include "jogo.h"
 #include "raylib.h"
+
+static int MaximoInteiro(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+/* Eu devolvo o maior entre dois numeros, usado pra impedir posicao negativa da janela. */
+
+static void CentralizarJanela(int largura, int altura)
+{
+    int monitor = GetCurrentMonitor();
+    Vector2 posicaoMonitor = GetMonitorPosition(monitor);
+    int larguraMonitor = GetMonitorWidth(monitor);
+    int alturaMonitor = GetMonitorHeight(monitor);
+    int x = (int)posicaoMonitor.x + MaximoInteiro((larguraMonitor - largura) / 2, 0);
+    int y = (int)posicaoMonitor.y + MaximoInteiro((alturaMonitor - altura) / 2, 0);
+
+    SetWindowPosition(x, y);
+}
+
+/* Eu pego as medidas do monitor atual e movo a janela pro meio dele. */
 
 ConfiguracaoJanela CriarConfiguracaoPadrao(void)
 {
@@ -15,6 +37,8 @@ ConfiguracaoJanela CriarConfiguracaoPadrao(void)
     return configuracao;
 }
 
+/* Eu devolvo uma configuracao pronta com largura, altura, fps e titulo dos defines de config.h. */
+
 int RodarEngine(ConfiguracaoJanela configuracao)
 {
     EstadoJogo jogo;
@@ -22,6 +46,7 @@ int RodarEngine(ConfiguracaoJanela configuracao)
 
     InitWindow(configuracao.largura, configuracao.altura, configuracao.titulo);
     SetTargetFPS(configuracao.fps);
+    CentralizarJanela(configuracao.largura, configuracao.altura);
 
     InicializarJogo(&jogo);
 
@@ -71,3 +96,5 @@ int RodarEngine(ConfiguracaoJanela configuracao)
     CloseWindow();
     return 0;
 }
+
+/* Eu abro a janela e fico alternando entre menu, jogo e game-over conforme as teclas, ate fechar. */

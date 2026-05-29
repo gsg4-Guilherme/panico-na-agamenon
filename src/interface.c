@@ -3,13 +3,14 @@
 #include <stddef.h>
 
 #include "config.h"
-#include "powerups.h"
 #include "raylib.h"
 
 static void DesenharFiltroChuva(void)
 {
     DrawRectangle(0, 0, LARGURA_JANELA, ALTURA_JANELA, (Color){ 0, 0, 0, 68 });
 }
+
+/* Eu so escureco a tela com um retangulo translucido pra dar sensacao de tempo fechado. */
 
 static void DesenharGotasChuva(void)
 {
@@ -35,19 +36,25 @@ static void DesenharGotasChuva(void)
     }
 }
 
+/* Eu desenho as gota sem guardar estado, usando GetTime e o indice de cada uma pra posicao. */
+
 static void DesenharEfeitoChuva(void)
 {
     DesenharFiltroChuva();
     DesenharGotasChuva();
 }
 
+/* Eu junto filtro + gotas pra so chamar uma funcao quando a chuva ta ativa. */
+
 void DesenharTelaMenu(void)
 {
     DrawText("Pânico na Agamenon", 250, 220, 38, RAYWHITE);
-    DrawText("ENTER inicia a partida", 315, 290, 22, LIGHTGRAY);
-    DrawText("ESC fecha a janela", 345, 325, 18, GRAY);
-    DrawText("Objetivo: desviar dos veículos e sobreviver mais tempo.", 175, 390, 20, RAYWHITE);
+    DrawText("ENTER - jogar", 335, 290, 22, LIGHTGRAY);
+    DrawText("ESC - sair", 335, 325, 18, GRAY);
+    DrawText("Objetivo: desviar dos veículos e sobreviver mais tempo.", 175, 420, 20, RAYWHITE);
 }
+
+/* Eu deixei o menu bem simples: titulo, comandos das teclas e o objetivo do jogo. */
 
 void DesenharHud(const EstadoJogo *jogo)
 {
@@ -58,9 +65,10 @@ void DesenharHud(const EstadoJogo *jogo)
     DrawText(TextFormat("Pontos: %d", jogo->pontuacaoAtual), 30, 30, 24, RAYWHITE);
     DrawText(TextFormat("Recorde: %d", jogo->melhorPontuacao), 30, 62, 20, LIGHTGRAY);
     DrawText(TextFormat("Obstáculos: %d", jogo->obstaculos.quantidade), 30, 90, 18, LIGHTGRAY);
-    DesenharPowerUpGuardado(jogo);
-    DrawText("Setas mudam de faixa | Seta cima ativa power-up", 245, 650, 18, LIGHTGRAY);
+    DrawText("Setas mudam de faixa", 245, 650, 18, LIGHTGRAY);
 }
+
+/* Eu mostro pontos, recorde, obstaculos e a instrucao das setas no rodape. */
 
 void DesenharTelaGameOver(const EstadoJogo *jogo)
 {
@@ -71,6 +79,8 @@ void DesenharTelaGameOver(const EstadoJogo *jogo)
     DrawText(TextFormat("Pontuação: %d", pontuacao), 365, 305, 22, LIGHTGRAY);
     DrawText("Pressione ENTER para tentar de novo", 255, 355, 22, LIGHTGRAY);
 }
+
+/* Eu escureco a tela e mostro a pontuacao final com o aviso pra apertar ENTER e jogar de novo. */
 
 void DesenharEventos(const EstadoJogo *jogo)
 {
@@ -86,6 +96,6 @@ void DesenharEventos(const EstadoJogo *jogo)
     if (jogo->engarrafamentoAtivo) {
         DrawText("ENGARRAFAMENTO", 680, 60, 20, ORANGE);
     }
-
-    DesenharIndicadoresPowerUps(jogo);
 }
+
+/* Eu desenho a chuva e o aviso de engarrafamento quando estao ativos. */

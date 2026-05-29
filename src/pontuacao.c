@@ -13,11 +13,12 @@ void InicializarPontuacao(EstadoJogo *jogo)
 
     jogo->pontuacaoAtual = 0;
     jogo->tempoSobrevivencia = 0.0f;
-    jogo->pontosBonusPowerUp = 0.0f;
     jogo->melhorPontuacao = CarregarMelhorPontuacao(CAMINHO_RANKING);
     jogo->chuvaAtiva = false;
     jogo->engarrafamentoAtivo = false;
 }
+
+/* Eu zero os campo da partida, puxo o recorde do arquivo e desligo chuva/engarrafamento. */
 
 void AtualizarPontuacao(EstadoJogo *jogo, float delta)
 {
@@ -26,13 +27,10 @@ void AtualizarPontuacao(EstadoJogo *jogo, float delta)
     }
 
     jogo->tempoSobrevivencia += delta;
-
-    if (jogo->tempoDobroPontos > 0.0f) {
-        jogo->pontosBonusPowerUp += delta * 10.0f;
-    }
-
-    jogo->pontuacaoAtual = (int)((jogo->tempoSobrevivencia * 10.0f) + jogo->pontosBonusPowerUp);
+    jogo->pontuacaoAtual = (int)(jogo->tempoSobrevivencia * 10.0f);
 
     jogo->chuvaAtiva = ((int)jogo->tempoSobrevivencia % 18) >= 12;
     jogo->engarrafamentoAtivo = ((int)jogo->tempoSobrevivencia % 25) >= 20;
 }
+
+/* Eu transformo o tempo vivo em pontos, e a chuva/engarrafamento ligam em ciclos pelo tempo de jogo. */

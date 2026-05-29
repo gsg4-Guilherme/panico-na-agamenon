@@ -19,6 +19,8 @@ int CarregarMelhorPontuacao(const char *caminho)
     return melhorPontuacao;
 }
 
+/* Eu abro o arquivo, leio um numero e fecho; se faltar o arquivo ou der ruim eu volto zero. */
+
 void SalvarPontuacaoSeRecorde(const char *caminho, int pontuacao)
 {
     int melhorPontuacao = CarregarMelhorPontuacao(caminho);
@@ -37,3 +39,5 @@ void SalvarPontuacaoSeRecorde(const char *caminho, int pontuacao)
     fprintf(arquivo, "%d\n", pontuacao);
     fclose(arquivo);
 }
+
+/* Eu so sobrescrevo o arquivo quando a pontuacao nova passa do recorde antigo. */

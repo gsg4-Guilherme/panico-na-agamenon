@@ -27,6 +27,8 @@ static bool TipoObstaculoValido(TipoObstaculo tipo)
     return tipo == OBSTACULO_CARRO || tipo == OBSTACULO_ONIBUS;
 }
 
+/* Eu so aceito carro ou onibus, pra defender contra valor invalido na lista. */
+
 static int ObterQuantidadeSprites(TipoObstaculo tipo)
 {
     if (tipo == OBSTACULO_ONIBUS) {
@@ -36,10 +38,14 @@ static int ObterQuantidadeSprites(TipoObstaculo tipo)
     return ASSETS_QUANTIDADE_CARROS;
 }
 
+/* Eu devolvo a quantidade de sprite que existe pro tipo (onibus ou carro). */
+
 static int SortearIndiceSprite(TipoObstaculo tipo)
 {
     return GetRandomValue(0, ObterQuantidadeSprites(tipo) - 1);
 }
+
+/* Eu sorteio um indice dentro da quantidade do tipo, pra variar a imagem dos obstaculos. */
 
 static Vector2 ObterTamanhoSprite(TipoObstaculo tipo, int indiceSprite)
 {
@@ -53,6 +59,8 @@ static Vector2 ObterTamanhoSprite(TipoObstaculo tipo, int indiceSprite)
 
     return TAMANHOS_SPRITES_CARRO[0];
 }
+
+/* Eu busco o tamanho pelo tipo+indice; se vier fora do range, devolvo o tamanho padrao de carro. */
 
 static Texture2D ObterTexturaObstaculo(const Obstaculo *obstaculo)
 {
@@ -73,6 +81,8 @@ static Texture2D ObterTexturaObstaculo(const Obstaculo *obstaculo)
     return (Texture2D){ 0 };
 }
 
+/* Eu devolvo a textura certa do tipo+indice, ou textura vazia quando o indice nao bate. */
+
 static void AtualizarCaixaObstaculo(Obstaculo *obstaculo)
 {
     if (obstaculo == NULL) {
@@ -87,10 +97,7 @@ static void AtualizarCaixaObstaculo(Obstaculo *obstaculo)
     };
 }
 
-static bool ObstaculoAindaPodeSerLimpo(const Obstaculo *obstaculo)
-{
-    return obstaculo != NULL && obstaculo->posicaoY <= ALTURA_JANELA;
-}
+/* Eu posiciono a caixa de colisao no centro da faixa com o tamanho do sprite. */
 
 static void DesenharFallbackObstaculo(const Obstaculo *obstaculo)
 {
@@ -103,6 +110,8 @@ static void DesenharFallbackObstaculo(const Obstaculo *obstaculo)
     DrawRectangleLinesEx(obstaculo->caixaColisao, 2.0f, RAYWHITE);
     DrawText(texto, (int)obstaculo->caixaColisao.x + 10, (int)obstaculo->caixaColisao.y + 34, 16, RAYWHITE);
 }
+
+/* Eu desenho retangulo + texto como reserva, pra dar pra jogar mesmo se faltar o sprite. */
 
 static Obstaculo *CriarObstaculo(int faixa, float velocidade, TipoObstaculo tipo)
 {
@@ -132,6 +141,8 @@ static Obstaculo *CriarObstaculo(int faixa, float velocidade, TipoObstaculo tipo
     return novoObstaculo;
 }
 
+/* Eu alloco o obstaculo, sorteio o sprite, comeco acima da tela e ja monto a caixa de colisao. */
+
 void InicializarListaObstaculos(ListaObstaculos *lista)
 {
     if (lista == NULL) {
@@ -141,6 +152,8 @@ void InicializarListaObstaculos(ListaObstaculos *lista)
     lista->inicio = NULL;
     lista->quantidade = 0;
 }
+
+/* Eu zero a lista (inicio = NULL, quantidade = 0) pro comeco de cada partida. */
 
 void CarregarTexturasObstaculos(void)
 {
@@ -156,6 +169,8 @@ void CarregarTexturasObstaculos(void)
         }
     }
 }
+
+/* Eu carrego cada textura de carro e onibus so quando ainda nao esta valida. */
 
 void LiberarTexturasObstaculos(void)
 {
@@ -173,6 +188,8 @@ void LiberarTexturasObstaculos(void)
         }
     }
 }
+
+/* Eu libero cada textura de carro e onibus que tiver carregada, depois zero pra nao sobra lixo. */
 
 bool AdicionarObstaculo(ListaObstaculos *lista, int faixa, float velocidade, TipoObstaculo tipo)
 {
@@ -192,6 +209,8 @@ bool AdicionarObstaculo(ListaObstaculos *lista, int faixa, float velocidade, Tip
     lista->quantidade++;
     return true;
 }
+
+/* Eu insiro no inicio da lista: e O(1) e nao precisa caminhar ate o fim. */
 
 void AtualizarObstaculos(ListaObstaculos *lista, float delta)
 {
@@ -217,6 +236,8 @@ void AtualizarObstaculos(ListaObstaculos *lista, float delta)
     }
 }
 
+/* Eu desco cada obstaculo pela velocidade e libero da lista quando ele sai muito longe da tela. */
+
 void DesenharObstaculos(const ListaObstaculos *lista)
 {
     if (lista == NULL) {
@@ -235,6 +256,8 @@ void DesenharObstaculos(const ListaObstaculos *lista)
     }
 }
 
+/* Eu percorro a lista; uso o sprite quando esta valido, senao o desenho de reserva. */
+
 bool VerificarColisaoJogadorObstaculos(const Jogador *jogador, const ListaObstaculos *lista)
 {
     if (jogador == NULL || lista == NULL) {
@@ -250,68 +273,7 @@ bool VerificarColisaoJogadorObstaculos(const Jogador *jogador, const ListaObstac
     return false;
 }
 
-bool RemoverPrimeiroObstaculoColidindo(ListaObstaculos *lista, const Jogador *jogador)
-{
-    if (jogador == NULL || lista == NULL) {
-        return false;
-    }
-
-    Obstaculo **ponteiroAtual = &lista->inicio;
-
-    while (*ponteiroAtual != NULL) {
-        Obstaculo *obstaculoAtual = *ponteiroAtual;
-
-        if (CheckCollisionRecs(jogador->caixaColisao, obstaculoAtual->caixaColisao)) {
-            *ponteiroAtual = obstaculoAtual->proximo;
-            free(obstaculoAtual);
-            lista->quantidade--;
-            return true;
-        }
-
-        ponteiroAtual = &obstaculoAtual->proximo;
-    }
-
-    return false;
-}
-
-int RemoverObstaculosFaixa(ListaObstaculos *lista, int faixa)
-{
-    int removidos = 0;
-
-    if (lista == NULL || faixa < 0 || faixa >= QUANTIDADE_FAIXAS) {
-        return 0;
-    }
-
-    Obstaculo **ponteiroAtual = &lista->inicio;
-
-    while (*ponteiroAtual != NULL) {
-        Obstaculo *obstaculoAtual = *ponteiroAtual;
-
-        if (obstaculoAtual->faixa == faixa) {
-            *ponteiroAtual = obstaculoAtual->proximo;
-            free(obstaculoAtual);
-            lista->quantidade--;
-            removidos++;
-        } else {
-            ponteiroAtual = &obstaculoAtual->proximo;
-        }
-    }
-
-    return removidos;
-}
-
-void AplicarVelocidadeObstaculosFaixa(ListaObstaculos *lista, int faixa, float velocidade)
-{
-    if (lista == NULL || faixa < 0 || faixa >= QUANTIDADE_FAIXAS) {
-        return;
-    }
-
-    for (Obstaculo *obstaculo = lista->inicio; obstaculo != NULL; obstaculo = obstaculo->proximo) {
-        if (obstaculo->faixa == faixa && ObstaculoAindaPodeSerLimpo(obstaculo)) {
-            obstaculo->velocidade = velocidade;
-        }
-    }
-}
+/* Eu comparo a caixa do jogador com cada obstaculo e paro no primeiro que encosta. */
 
 void LiberarObstaculos(ListaObstaculos *lista)
 {
@@ -329,3 +291,5 @@ void LiberarObstaculos(ListaObstaculos *lista)
 
     InicializarListaObstaculos(lista);
 }
+
+/* Eu free cada no andando pelo proximo e no fim deixo a lista zerada de novo. */
