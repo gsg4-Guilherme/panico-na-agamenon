@@ -6,7 +6,10 @@
 
 static int MaximoInteiro(int a, int b)
 {
-    return a > b ? a : b;
+    if (a > b)
+        return a;
+    else
+        return b;
 }
 
 /* Eu devolvo o maior entre dois numeros, usado pra impedir posicao negativa da janela. */
