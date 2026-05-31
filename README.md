@@ -129,3 +129,6 @@ O Makefile usa, no Linux, as flags comuns:
 - Raylib no Windows: https://github-wiki-see.page/m/raysan5/raylib/wiki/Working-on-Windows
 - Raylib no Linux: https://github-wiki-see.page/m/raysan5/raylib/wiki/Working-on-GNU-Linux
 - w64devkit: https://github.com/skeeto/w64devkit/releases
+
+## Vídeo do Jogo
+- https://youtu.be/okifUNw7-I4
